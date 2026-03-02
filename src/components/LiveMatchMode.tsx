@@ -54,23 +54,28 @@ export function LiveMatchMode({ userProfile, onBack, onWinPoints }: LiveMatchMod
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
+      
       setChallenges(prev => {
         const expired = prev.filter(c => new Date(c.expiresAt) < now && !resolvedChallenges.includes(c.id));
         
-        expired.forEach(c => {
-          const prediction = predictions[c.id];
-          if (prediction) {
-            // 50/50 chance of being right for simulation
-            const isCorrect = Math.random() > 0.5;
-            if (isCorrect) {
-              onWinPoints(c.points, `Correct Prediction: ${c.question}`);
-              addToast(`🎯 CALLED IT! +${c.points} pts`, "success");
-            } else {
-              addToast(`❌ Missed it: ${c.question}`, "error");
-            }
-          }
-          setResolvedChallenges(r => [...r, c.id]);
-        });
+        if (expired.length > 0) {
+          // Defer side effects to avoid updating other components during render/state update
+          setTimeout(() => {
+            expired.forEach(c => {
+              const prediction = predictions[c.id];
+              if (prediction) {
+                const isCorrect = Math.random() > 0.5;
+                if (isCorrect) {
+                  onWinPoints(c.points, `Correct Prediction: ${c.question}`);
+                  addToast(`🎯 CALLED IT! +${c.points} pts`, "success");
+                } else {
+                  addToast(`❌ Missed it: ${c.question}`, "error");
+                }
+              }
+              setResolvedChallenges(r => [...r, c.id]);
+            });
+          }, 0);
+        }
 
         return prev.filter(c => new Date(c.expiresAt) > now);
       });

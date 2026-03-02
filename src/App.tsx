@@ -510,31 +510,34 @@ export default function App() {
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!session?.user?.id) return;
     
+    let newProfile: UserProfile | null = null;
     setUserProfile(prev => {
-      const newProfile = { ...prev, ...data };
-      
-      // Sync to server using the newly computed profile
+      newProfile = { ...prev, ...data };
+      return newProfile;
+    });
+
+    // Sync to server outside of the state update to avoid side effects during render
+    if (newProfile) {
+      const profileToSync = newProfile as UserProfile;
       fetch('/api/user/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: session.user.id,
-          username: newProfile.username,
+          username: profileToSync.username,
           email: session.user.email,
-          bio: newProfile.bio,
-          avatarSeed: newProfile.avatarSeed,
+          bio: profileToSync.bio,
+          avatarSeed: profileToSync.avatarSeed,
           balance: balance,
-          onboardingCompleted: newProfile.onboardingCompleted,
-          isAdmin: newProfile.isAdmin,
-          joinedDate: newProfile.joinedDate
+          onboardingCompleted: profileToSync.onboardingCompleted,
+          isAdmin: profileToSync.isAdmin,
+          joinedDate: profileToSync.joinedDate
         })
       }).catch(err => {
         console.error("Failed to sync profile change:", err);
         addToast("Failed to save profile changes", "error");
       });
-
-      return newProfile;
-    });
+    }
   };
 
   const handleOnboardingComplete = async (data: Partial<UserProfile>) => {
@@ -572,8 +575,14 @@ export default function App() {
         setBalance(prev => {
           if (prev > 1000) {
             const auditAmount = Math.floor(prev * 0.05);
-            addTransaction('tax', auditAmount, "Random Wealth Tax Audit");
-            addToast(`TAX AUDIT! The government seized ${auditAmount} points 😵`, "error");
+            
+            // Side effects should be outside of state updates
+            // We use a timeout to defer the side effects until after the render phase
+            setTimeout(() => {
+              addTransaction('tax', auditAmount, "Random Wealth Tax Audit");
+              addToast(`TAX AUDIT! The government seized ${auditAmount} points 😵`, "error");
+            }, 0);
+
             return prev - auditAmount;
           }
           return prev;
