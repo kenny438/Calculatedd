@@ -535,13 +535,41 @@ export default function App() {
     }
   }, [session, userProfile.onboardingCompleted, userProfile.username, userProfile.bio, userProfile.avatarSeed, isInitialSyncDone]);
 
-  const handleOnboardingComplete = (data: Partial<UserProfile>) => {
-    setUserProfile(prev => ({
-      ...prev,
+  const handleOnboardingComplete = async (data: Partial<UserProfile>) => {
+    const newProfile = {
+      ...userProfile,
       ...data,
       onboardingCompleted: true
-    }));
-    addToast("Profile setup complete!", "success");
+    };
+    
+    setUserProfile(newProfile);
+    
+    // Explicit sync to server to ensure persistence
+    if (session?.user?.id) {
+      try {
+        await fetch('/api/user/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: session.user.id,
+            username: newProfile.username,
+            email: newProfile.email,
+            bio: newProfile.bio,
+            avatarSeed: newProfile.avatarSeed,
+            balance: balance,
+            onboardingCompleted: true,
+            isAdmin: newProfile.isAdmin,
+            joinedDate: newProfile.joinedDate
+          })
+        });
+        addToast("Profile setup complete!", "success");
+      } catch (err) {
+        console.error("Failed to sync onboarding status:", err);
+        addToast("Failed to save profile. Please try again.", "error");
+      }
+    } else {
+      addToast("Profile setup complete!", "success");
+    }
   };
 
   // Simulate market movement (only for active session to keep it alive)
