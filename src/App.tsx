@@ -505,78 +505,41 @@ export default function App() {
     }
   }, [positions, session?.user?.id, isInitialSyncDone]);
 
-  useEffect(() => {
-    if (isInitialSyncDone && session?.user?.id) {
-      const email = session.user.email;
-      const isAdmin = ["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com"].includes(email || "");
+  // Sync profile to server is now handled manually via updateProfile function to prevent data corruption
+  
+  const updateProfile = async (data: Partial<UserProfile>) => {
+    if (!session?.user?.id) return;
+    
+    setUserProfile(prev => {
+      const newProfile = { ...prev, ...data };
       
-      // Sync profile to server
+      // Sync to server using the newly computed profile
       fetch('/api/user/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: session.user.id,
-          username: userProfile.username,
-          email: email,
-          bio: userProfile.bio,
-          avatarSeed: userProfile.avatarSeed,
+          username: newProfile.username,
+          email: session.user.email,
+          bio: newProfile.bio,
+          avatarSeed: newProfile.avatarSeed,
           balance: balance,
-          onboardingCompleted: userProfile.onboardingCompleted,
-          isAdmin: isAdmin,
-          joinedDate: userProfile.joinedDate
+          onboardingCompleted: newProfile.onboardingCompleted,
+          isAdmin: newProfile.isAdmin,
+          joinedDate: newProfile.joinedDate
         })
-      }).catch(err => console.error("Failed to sync profile:", err));
-
-      setUserProfile(prev => {
-        // Only update if something changed to avoid infinite loops
-        if (prev.email !== email || prev.isAdmin !== isAdmin) {
-           return { 
-             ...prev, 
-             email: email || "",
-             isAdmin: isAdmin,
-             isVerified: isAdmin // Admins are automatically verified
-           };
-        }
-        return prev;
+      }).catch(err => {
+        console.error("Failed to sync profile change:", err);
+        addToast("Failed to save profile changes", "error");
       });
-    }
-  }, [session, userProfile.onboardingCompleted, userProfile.username, userProfile.bio, userProfile.avatarSeed, isInitialSyncDone]);
+
+      return newProfile;
+    });
+  };
 
   const handleOnboardingComplete = async (data: Partial<UserProfile>) => {
-    const newProfile = {
-      ...userProfile,
-      ...data,
-      onboardingCompleted: true
-    };
-    
-    setUserProfile(newProfile);
-    
-    // Explicit sync to server to ensure persistence
-    if (session?.user?.id) {
-      try {
-        await fetch('/api/user/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: session.user.id,
-            username: newProfile.username,
-            email: newProfile.email,
-            bio: newProfile.bio,
-            avatarSeed: newProfile.avatarSeed,
-            balance: balance,
-            onboardingCompleted: true,
-            isAdmin: newProfile.isAdmin,
-            joinedDate: newProfile.joinedDate
-          })
-        });
-        addToast("Profile setup complete!", "success");
-      } catch (err) {
-        console.error("Failed to sync onboarding status:", err);
-        addToast("Failed to save profile. Please try again.", "error");
-      }
-    } else {
-      addToast("Profile setup complete!", "success");
-    }
+    await updateProfile({ ...data, onboardingCompleted: true });
+    addToast("Profile setup complete!", "success");
   };
 
   // Simulate market movement (only for active session to keep it alive)
@@ -1239,7 +1202,7 @@ export default function App() {
         return (
           <Profile 
             profile={userProfile} 
-            onUpdateProfile={setUserProfile}
+            onUpdateProfile={updateProfile}
             transactions={transactions}
             stats={{
               totalBets: transactions.filter(t => t.type.startsWith('bet')).length,
