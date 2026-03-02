@@ -86,6 +86,7 @@ export default function App() {
               email: user.email || session.user.email || "",
               bio: user.bio || DEFAULT_PROFILE.bio,
               avatarSeed: user.avatar_seed || DEFAULT_PROFILE.avatarSeed,
+              avatarUrl: user.avatar_url,
               joinedDate: user.joined_date || DEFAULT_PROFILE.joinedDate,
               isAdmin: user.is_admin === 1,
               onboardingCompleted: true,
@@ -403,6 +404,7 @@ export default function App() {
         userId: session?.user.id || "me",
         username: userProfile.username,
         avatarSeed: userProfile.avatarSeed,
+        avatarUrl: userProfile.avatarUrl,
         role: "admin",
         joinedAt: new Date().toISOString(),
         totalVolume: 0
@@ -435,6 +437,7 @@ export default function App() {
       userId: session?.user.id || "me",
       username: userProfile.username,
       avatarSeed: userProfile.avatarSeed,
+      avatarUrl: userProfile.avatarUrl,
       role: "member" as const,
       joinedAt: new Date().toISOString(),
       totalVolume: 0
@@ -528,6 +531,7 @@ export default function App() {
           email: session.user.email,
           bio: profileToSync.bio,
           avatarSeed: profileToSync.avatarSeed,
+          avatarUrl: profileToSync.avatarUrl,
           balance: balance,
           onboardingCompleted: profileToSync.onboardingCompleted,
           isAdmin: profileToSync.isAdmin,
@@ -806,6 +810,7 @@ export default function App() {
       userId: session?.user?.id || userProfile.email,
       username: userProfile.username,
       avatarSeed: userProfile.avatarSeed,
+      avatarUrl: userProfile.avatarUrl,
       text,
       timestamp: new Date().toISOString(),
       media,
@@ -1158,7 +1163,7 @@ export default function App() {
                   >
                     <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
                       <img 
-                        src={`https://picsum.photos/seed/${userProfile.avatarSeed}/100/100`} 
+                        src={userProfile.avatarUrl || `https://picsum.photos/seed/${userProfile.avatarSeed}/100/100`} 
                         alt="User" 
                         className="w-full h-full object-cover" 
                         referrerPolicy="no-referrer"

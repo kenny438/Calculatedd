@@ -23,6 +23,7 @@ db.exec(`
     email TEXT UNIQUE,
     bio TEXT,
     avatar_seed TEXT,
+    avatar_url TEXT,
     balance INTEGER DEFAULT 10000,
     onboarding_completed INTEGER DEFAULT 0,
     is_admin INTEGER DEFAULT 0,
@@ -125,6 +126,7 @@ db.exec(`
     user_id TEXT,
     username TEXT,
     avatar_seed TEXT,
+    avatar_url TEXT,
     text TEXT,
     timestamp TEXT,
     media_type TEXT,
@@ -157,6 +159,7 @@ async function startServer() {
             ...c,
             userId: c.user_id,
             avatarSeed: c.avatar_seed,
+            avatarUrl: c.avatar_url,
             media: c.media_type ? { type: c.media_type, url: c.media_url } : undefined
           }))
         };
@@ -338,12 +341,12 @@ async function startServer() {
   });
 
   app.post("/api/markets/comment", (req, res) => {
-    const { id, marketId, userId, username, avatarSeed, text, timestamp, media } = req.body;
+    const { id, marketId, userId, username, avatarSeed, avatarUrl, text, timestamp, media } = req.body;
     try {
       db.prepare(`
-        INSERT INTO comments (id, market_id, user_id, username, avatar_seed, text, timestamp, media_type, media_url)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(id, marketId, userId, username, avatarSeed, text, timestamp, media?.type, media?.url);
+        INSERT INTO comments (id, market_id, user_id, username, avatar_seed, avatar_url, text, timestamp, media_type, media_url)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(id, marketId, userId, username, avatarSeed, avatarUrl, text, timestamp, media?.type, media?.url);
       res.json({ success: true });
     } catch (err) {
       res.status(500).json({ error: "Database error" });
@@ -447,19 +450,20 @@ async function startServer() {
   });
 
   app.post("/api/user/sync", (req, res) => {
-    const { id, username, email, bio, avatarSeed, balance, onboardingCompleted, isAdmin, joinedDate } = req.body;
+    const { id, username, email, bio, avatarSeed, avatarUrl, balance, onboardingCompleted, isAdmin, joinedDate } = req.body;
     try {
       db.prepare(`
-        INSERT INTO users (id, username, email, bio, avatar_seed, balance, onboarding_completed, is_admin, joined_date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (id, username, email, bio, avatar_seed, avatar_url, balance, onboarding_completed, is_admin, joined_date)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
           username = excluded.username,
           bio = excluded.bio,
           avatar_seed = excluded.avatar_seed,
+          avatar_url = excluded.avatar_url,
           balance = excluded.balance,
           onboarding_completed = excluded.onboarding_completed,
           is_admin = excluded.is_admin
-      `).run(id, username, email, bio, avatarSeed, balance, onboardingCompleted ? 1 : 0, isAdmin ? 1 : 0, joinedDate);
+      `).run(id, username, email, bio, avatarSeed, avatarUrl, balance, onboardingCompleted ? 1 : 0, isAdmin ? 1 : 0, joinedDate);
       res.json({ success: true });
     } catch (err) {
       console.error(err);

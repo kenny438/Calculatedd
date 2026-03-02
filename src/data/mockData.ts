@@ -5,6 +5,7 @@ export interface Comment {
   userId: string;
   username: string;
   avatarSeed: string;
+  avatarUrl?: string;
   text: string;
   timestamp: string;
   media?: {
@@ -55,6 +56,7 @@ export interface UserProfile {
   email: string;
   bio: string;
   avatarSeed: string;
+  avatarUrl?: string;
   joinedDate: string;
   isAdmin?: boolean;
   isVerified?: boolean;
@@ -70,6 +72,7 @@ export interface GroupMember {
   userId: string;
   username: string;
   avatarSeed: string;
+  avatarUrl?: string;
   role: "admin" | "member";
   joinedAt: string;
   totalVolume: number;

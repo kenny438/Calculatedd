@@ -52,6 +52,21 @@ export function Profile({ profile, onUpdateProfile, transactions, stats, onClaim
     addToast("Profile updated successfully", "success");
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // 1MB limit
+        addToast("Image size must be less than 1MB", "error");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedProfile({ ...editedProfile, avatarUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleLogout = () => {
     if (confirm("Are you sure you want to logout? This will clear your local session.")) {
         localStorage.clear();
@@ -91,19 +106,35 @@ export function Profile({ profile, onUpdateProfile, transactions, stats, onClaim
           <div className="relative group">
             <div className="w-32 h-32 md:w-48 md:h-48 rounded-[2rem] md:rounded-[2.5rem] border-4 border-white/10 bg-gray-900 overflow-hidden shadow-2xl transform transition-transform group-hover:scale-105 duration-500">
               <img 
-                src={`https://picsum.photos/seed/${profile.avatarSeed}/400/400`} 
+                src={editedProfile.avatarUrl || `https://picsum.photos/seed/${editedProfile.avatarSeed}/400/400`} 
                 alt="Profile" 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
             </div>
             {isEditing && (
-              <button 
-                className="absolute -bottom-2 -right-2 p-3 md:p-4 bg-emerald-500 text-white rounded-xl md:rounded-2xl shadow-2xl hover:bg-emerald-400 transition-all transform hover:scale-110 active:scale-90"
-                onClick={() => setEditedProfile({...editedProfile, avatarSeed: Math.random().toString()})}
-              >
-                <Camera className="w-5 h-5 md:w-6 md:h-6" />
-              </button>
+              <div className="absolute -bottom-2 -right-2 flex flex-col gap-2">
+                <input
+                  type="file"
+                  id="avatar-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                <label 
+                  htmlFor="avatar-upload"
+                  className="p-3 md:p-4 bg-white text-emerald-600 rounded-xl md:rounded-2xl shadow-2xl hover:bg-gray-100 transition-all transform hover:scale-110 active:scale-90 cursor-pointer flex items-center justify-center"
+                >
+                  <Camera className="w-5 h-5 md:w-6 md:h-6" />
+                </label>
+                <button 
+                  className="p-3 md:p-4 bg-emerald-500 text-white rounded-xl md:rounded-2xl shadow-2xl hover:bg-emerald-400 transition-all transform hover:scale-110 active:scale-90"
+                  onClick={() => setEditedProfile({...editedProfile, avatarSeed: Math.random().toString(), avatarUrl: undefined})}
+                  title="Randomize Avatar"
+                >
+                  <Zap className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+              </div>
             )}
           </div>
 

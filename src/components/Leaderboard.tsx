@@ -138,7 +138,7 @@ export function Leaderboard({ isOpen, onClose, currentUser, currentUserStats }: 
                   </div>
                   <div className="w-14 h-14 rounded-2xl bg-emerald-800 overflow-hidden border-2 border-emerald-500 shadow-xl">
                     <img 
-                      src={`https://picsum.photos/seed/${currentUser.avatarSeed}/100/100`} 
+                      src={currentUser.avatarUrl || `https://picsum.photos/seed/${currentUser.avatarSeed}/100/100`} 
                       alt={currentUser.username} 
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"

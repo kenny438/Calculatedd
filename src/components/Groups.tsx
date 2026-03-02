@@ -128,7 +128,7 @@ export function Groups({ groups, onCreateGroup, onJoinGroup, onLeaveGroup, curre
                     <div className="flex items-center gap-4">
                       <span className="w-6 text-xs font-black text-gray-400">#{idx + 1}</span>
                       <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-white shadow-sm">
-                        <img src={`https://picsum.photos/seed/${member.avatarSeed}/100/100`} alt={member.username} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        <img src={member.avatarUrl || `https://picsum.photos/seed/${member.avatarSeed}/100/100`} alt={member.username} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       </div>
                       <div>
                         <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{member.username}</p>
@@ -274,7 +274,7 @@ export function Groups({ groups, onCreateGroup, onJoinGroup, onLeaveGroup, curre
                         {group.members.slice(0, 4).map((member, i) => (
                           <img 
                             key={i}
-                            src={`https://picsum.photos/seed/${member.avatarSeed}/100/100`}
+                            src={member.avatarUrl || `https://picsum.photos/seed/${member.avatarSeed}/100/100`}
                             alt={member.username}
                             className="w-8 h-8 rounded-xl border-2 border-white bg-gray-100 shadow-sm"
                             referrerPolicy="no-referrer"

@@ -100,7 +100,7 @@ export function CommentSection({ comments, userProfile, onAddComment, onDeleteCo
             >
               <div className="flex-shrink-0">
                 <img 
-                  src={`https://picsum.photos/seed/${comment.avatarSeed}/100/100`} 
+                  src={comment.avatarUrl || `https://picsum.photos/seed/${comment.avatarSeed}/100/100`} 
                   alt={comment.username} 
                   className="w-10 h-10 rounded-full bg-gray-100 object-cover"
                   referrerPolicy="no-referrer"
@@ -154,7 +154,7 @@ export function CommentSection({ comments, userProfile, onAddComment, onDeleteCo
       <div className="relative pt-4 border-t border-gray-100">
         <form onSubmit={handleSubmit} className="flex gap-3">
           <img 
-            src={`https://picsum.photos/seed/${userProfile.avatarSeed}/100/100`} 
+            src={userProfile.avatarUrl || `https://picsum.photos/seed/${userProfile.avatarSeed}/100/100`} 
             alt="You" 
             className="w-10 h-10 rounded-full bg-gray-100 object-cover hidden sm:block"
             referrerPolicy="no-referrer"

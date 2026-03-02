@@ -194,7 +194,7 @@ export function Layout({
                 className="w-8 h-8 rounded-full bg-gray-200 border border-gray-300 overflow-hidden ml-1 hover:ring-2 hover:ring-emerald-500 transition-all cursor-pointer"
               >
                 <img 
-                  src={`https://picsum.photos/seed/${userProfile?.avatarSeed || "user"}/100/100`} 
+                  src={userProfile?.avatarUrl || `https://picsum.photos/seed/${userProfile?.avatarSeed || "user"}/100/100`} 
                   alt="User" 
                   className="w-full h-full object-cover" 
                   referrerPolicy="no-referrer" 
