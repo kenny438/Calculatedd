@@ -51,12 +51,14 @@ export default function App() {
   const [watchlist, setWatchlist] = useLocalStorage<string[]>(`kalshi-clone-watchlist-${userId}`, []);
   const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   // Sync with server on login
   useEffect(() => {
     if (session?.user?.id) {
       // Reset state immediately when user changes to prevent data leakage
       setIsInitialSyncDone(false);
+      setSyncError(null);
       setUserProfile(DEFAULT_PROFILE);
       setBalance(10000);
       setPositions([]);
@@ -72,6 +74,7 @@ export default function App() {
             // Security check: Ensure we got the correct user's data
             if (data.user.id !== session.user.id) {
               console.error("Security Mismatch: Fetched user ID does not match session ID");
+              setSyncError("Security mismatch detected. Please log in again.");
               return;
             }
 
@@ -136,10 +139,13 @@ export default function App() {
             // Update local state to reflect new user
             setUserProfile(newProfile);
             setIsInitialSyncDone(true);
+          } else {
+             throw new Error(`Server responded with status: ${res.status}`);
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error("Failed to sync user data:", err);
-          setIsInitialSyncDone(true);
+          setSyncError(err.message || "Failed to load user data");
+          // Do NOT set isInitialSyncDone(true) here to prevent overwriting server data with default profile
         }
       };
       fetchUserData();
@@ -150,6 +156,7 @@ export default function App() {
       setPositions([]);
       setTransactions([]);
       setIsInitialSyncDone(false);
+      setSyncError(null);
     }
   }, [session?.user?.id]);
 
@@ -1252,6 +1259,26 @@ export default function App() {
         return <div className="p-12 text-center text-gray-500">Coming Soon</div>;
     }
   };
+
+  if (syncError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Connection Issue</h2>
+          <p className="text-gray-500 mb-6">{syncError}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading || (session && !isInitialSyncDone)) {
     return (
