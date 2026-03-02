@@ -15,7 +15,7 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 import { useToast } from "./components/ui/Toast";
 import { useAuth } from "./contexts/AuthContext";
 import { Auth } from "./components/Auth";
-import { OnboardingModal } from "./components/OnboardingModal";
+// import { OnboardingModal } from "./components/OnboardingModal"; // Removed as per user request to get rid of questioning
 import { Leaderboard } from "./components/Leaderboard";
 import { Groups } from "./components/Groups";
 import { TermsOfService } from "./components/TermsOfService";
@@ -25,12 +25,12 @@ import confetti from "canvas-confetti";
 import { ShortcutsHelp } from "./components/ShortcutsHelp";
 
 const DEFAULT_PROFILE: UserProfile = {
-  username: "Trader123",
+  username: `Trader${Math.floor(Math.random() * 10000)}`,
   email: "trader@example.com",
   bio: "Just a crypto enthusiast predicting the future one block at a time.",
-  avatarSeed: "user123",
+  avatarSeed: `user${Math.floor(Math.random() * 10000)}`,
   joinedDate: new Date().toISOString(),
-  onboardingCompleted: false,
+  onboardingCompleted: true,
 };
 
 export default function App() {
@@ -88,7 +88,7 @@ export default function App() {
               avatarSeed: user.avatar_seed || DEFAULT_PROFILE.avatarSeed,
               joinedDate: user.joined_date || DEFAULT_PROFILE.joinedDate,
               isAdmin: user.is_admin === 1,
-              onboardingCompleted: user.onboarding_completed === 1,
+              onboardingCompleted: true,
               xp: user.xp || 0,
               level: user.level || 1,
               dailyStreak: user.daily_streak || 0,
@@ -130,7 +130,7 @@ export default function App() {
                 bio: newProfile.bio,
                 avatarSeed: newProfile.avatarSeed,
                 balance: 10000,
-                onboardingCompleted: false,
+                onboardingCompleted: true,
                 isAdmin: isAdmin,
                 joinedDate: newProfile.joinedDate
               })
@@ -1264,9 +1264,10 @@ export default function App() {
     return <Auth />;
   }
 
-  if (!userProfile.onboardingCompleted) {
-    return <OnboardingModal onComplete={handleOnboardingComplete} initialEmail={session.user.email!} />;
-  }
+  // OnboardingModal check removed as per user request to get rid of questioning
+  // if (!userProfile.onboardingCompleted) {
+  //   return <OnboardingModal onComplete={handleOnboardingComplete} initialEmail={session.user.email!} />;
+  // }
 
   const userStats = {
     totalVolume: transactions.filter(t => t.type.startsWith('bet')).reduce((acc, t) => acc + t.amount, 0),
