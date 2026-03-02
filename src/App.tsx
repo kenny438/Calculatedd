@@ -56,6 +56,7 @@ export default function App() {
   useEffect(() => {
     if (session?.user?.id) {
       // Reset state immediately when user changes to prevent data leakage
+      setIsInitialSyncDone(false);
       setUserProfile(DEFAULT_PROFILE);
       setBalance(10000);
       setPositions([]);
@@ -1224,7 +1225,7 @@ export default function App() {
     }
   };
 
-  if (loading) {
+  if (loading || (session && !isInitialSyncDone)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
